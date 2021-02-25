@@ -11,15 +11,15 @@ covMat = cov(stdWholeData)          % covariance matrix
 [eigVecMat,eigValMat] = eig(covMat) % eigenvectors and eigenvalues
 
 % part b
-plotStandardised(stdWholeData, eigVecMat) % plot standardised data
+plotStandardised(stdWholeData, eigVecMat) % plot standardised data + vectors of Principal Components
 
 % part c
-proj2d = covMat(:,end-1:end);
+proj2d = eigVecMat(:,end-1:end);
 proj2dData = proj2d' * stdWholeData';
 plotProj2d(proj2dData');
 
 % part d
-plotProj1d(stdWholeData,covMat);
+plotProj1d(stdWholeData,eigVecMat);
 
 
 
@@ -38,7 +38,10 @@ xlabel("Principal Component");
 title("Scree plot");
 
 % part b
-
+[eigVecMat,eigValMat] = eig(covMat) % eigenvectors and eigenvalues
+proj3d = eigVecMat(:,end-2:end);
+proj3dData = proj3d' * stdWholeData'
+plotProj3d(proj3dData',eigVecMat(:,end-2:end));
 
 
 %% Helper functions
@@ -109,16 +112,16 @@ function plotProj2d(data)
         currObj = objectsLst(n+1);
         plot(X(i:i+9),Y(i:i+9),'+','Color',colMap(currObj));
     end
-    xlabel('1st eigenvector');
-    ylabel('2nd eigenvector');
+    xlabel('PC1');
+    ylabel('PC2');
     hold off;
     title('Projected on 2 principal components');
 end
 
-function plotProj1d(data,covMat)
+function plotProj1d(data,eigVecMat)
     figure;
     for PC=1:3
-        eigVec = covMat(:,4-PC); % obtain eigenvectors (starting from biggest which is indexed 3)
+        eigVec = eigVecMat(:,4-PC); % obtain eigenvectors (starting from biggest which is indexed 3)
         % project data onto eigenvectors
         projData = eigVec' * data'; 
 
@@ -151,4 +154,26 @@ function wholeData = getWholeDataElecs(data)
     wholeData = [wholeData; data.carSponge'];
     wholeData = [wholeData; data.blackFoam'];
     wholeData = [wholeData; data.acrylic'];
+end
+
+function plotProj3d(data, eigVecs)
+    figure;
+    X = data(:,3); % biggest component
+    Y = data(:,2); % 2nd biggest component
+    Z = data(:,1); % 3rd biggest component
+    colMap = load("colours.mat");
+    colMap = colMap.coloursMap;
+    objectsLst = load("objects.mat");
+    objectsLst = objectsLst.objects;
+    hold on;
+    for n=0:5
+        i=n*10+1;
+        currObj = objectsLst(n+1);
+        plot3(X(i:i+9),Y(i:i+9),Z(i:i+9),'+','Color',colMap(currObj));
+    end
+    hold off;
+    xlabel('PC1');
+    ylabel('PC2');
+    zlabel('PC3');
+    title('Projected on 3 principal components');
 end
