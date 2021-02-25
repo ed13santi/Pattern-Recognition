@@ -27,6 +27,15 @@ plotProj1d(stdWholeData,covMat);
 
 % part a 
 data = load("F0_Elecs.mat");
+wholeData = getWholeDataElecs(data);
+stdWholeData = standardiseData(wholeData);
+covMat = cov(stdWholeData);          % covariance matrix
+eigenvalues = eig(covMat) % eigenvalues
+figure;
+plot(length(eigenvalues):-1:1, eigenvalues);
+ylabel("eigenvalues");
+xlabel("Principal Component");
+title("Scree plot");
 
 % part b
 
@@ -134,20 +143,12 @@ function plotProj1d(data,covMat)
 end
 
 function wholeData = getWholeDataElecs(data)
+    data = data.Elecs;
     wholeData = [];
-    wholeData = appendObjTrial(wholeData, data.steelVase);
-    wholeData = appendObjTrial(wholeData, data.kitchenSponge);
-    wholeData = appendObjTrial(wholeData, data.flourSack);
-    wholeData = appendObjTrial(wholeData, data.carSponge);
-    wholeData = appendObjTrial(wholeData, data.blackFoam);
-    wholeData = appendObjTrial(wholeData, data.acrylic);
-end
-
-function [X,Y,Z] = appendObjTrialElecs(wholeData,objData)
-    for trial=1:10
-        trialData = objData(trial);
-        X = [X; trialData.P];
-        Y = [Y; trialData.V];
-        Z = [Z; trialData.T];
-    end
+    wholeData = [wholeData; data.steelVase'];
+    wholeData = [wholeData; data.kitchenSponge'];
+    wholeData = [wholeData; data.flourSack'];
+    wholeData = [wholeData; data.carSponge'];
+    wholeData = [wholeData; data.blackFoam'];
+    wholeData = [wholeData; data.acrylic'];
 end
