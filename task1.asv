@@ -30,12 +30,12 @@ PVT.acrylic = addObjectPVT("acrylic",finger, time_step);
 save(['F',num2str(finger),'_PVT.mat'], 'PVT');
 
 Elecs = struct;
-Elecs.steelVase = addObjectE("steelVase",finger, time_step);
-Elecs.kitchenSponge = addObjectE("kitchenSponge",finger, time_step);
-Elecs.flourSack = addObjectE("flourSack",finger, time_step);
-Elecs.carSponge = addObjectE("carSponge",finger, time_step);
-Elecs.blackFoam = addObjectE("blackFoam",finger, time_step);
-Elecs.acrylic = addObjectE("acrylic",finger, time_step);
+Elecs.steelVase = addObjectE(PVT, "steelVase",finger, time_step);
+Elecs.kitchenSponge = addObjectE(PVT, "kitchenSponge",finger, time_step);
+Elecs.flourSack = addObjectE(PVT, "flourSack",finger, time_step);
+Elecs.carSponge = addObjectE(PVT, "carSponge",finger, time_step);
+Elecs.blackFoam = addObjectE(PVT, "blackFoam",finger, time_step);
+Elecs.acrylic = addObjectE(PVT, "acrylic",finger, time_step);
 save(['F',num2str(finger),'_Elecs.mat'], 'PVT');
 
 %% A3
@@ -116,7 +116,7 @@ function [P,V,T,E] = extractTimeStepPVT(object, finger, trial, time)
     P = pres(time);
     V = vibr(time);
     T = temp(time);
-    E = elecs(:,time);
+    E = elecs(time);
 end    
 
 function trials = addObjectPVT(object, finger, time)
