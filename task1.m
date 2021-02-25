@@ -1,5 +1,6 @@
 clear all
 
+
 %% A1
 
 %plot within the range
@@ -17,6 +18,7 @@ displayObjTrialFinger("acrylic",       0,1,timeLims,normalise);
 
 %% A2
 
+% CHOOSE TIME STEP AND FINGER
 time_step = 700;
 finger = 0;
 
@@ -39,6 +41,23 @@ Elecs.acrylic = addObjectE("acrylic",finger, time_step);
 save(['F',num2str(finger),'_Elecs.mat'], 'PVT');
 
 %% A3
+
+PVT = load(['F',num2str(finger),'_Elecs.mat'], 'PVT');
+
+figure;
+plotBranch(PVT.PVT.steelVase,'steelVase');
+hold on;
+plotBranch(PVT.PVT.kitchenSponge,'kitchenSponge');
+plotBranch(PVT.PVT.flourSack,'flourSack');
+plotBranch(PVT.PVT.carSponge,'carSponge');
+plotBranch(PVT.PVT.blackFoam,'blackFoam');
+plotBranch(PVT.PVT.acrylic,'acrylic');
+hold off;
+xlabel('P');
+ylabel('V');
+zlabel('T');
+
+
 
 %% HELPER FUNCTIONS
 
@@ -136,5 +155,25 @@ function trials = addObjectE(object, finger, time)
         [~,~,~,Elecs] = extractTimeStepPVT(object, finger, trial, time);
         trials = [trials, Elecs];
     end
+end
+
+function [X,Y,Z] = getCoords(PVTbranch,trial)
+    X = PVTbranch(trial).P;
+    Y = PVTbranch(trial).V;
+    Z = PVTbranch(trial).T;
+end
+
+function plotBranch(PVTbranch,object)
+    X = [];
+    Y = [];
+    Z = [];
+    for trial=1:10
+        [x,y,z] = getCoords(PVTbranch,trial);
+        X = [X;x];
+        Y = [Y;y];
+        Z = [Z;z];
+    end
+    coloursMap = load('colours.mat');
+    plot3(X,Y,Z,'+','Color',coloursMap.coloursMap(object));
 end
         
