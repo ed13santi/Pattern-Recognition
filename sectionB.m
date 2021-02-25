@@ -21,11 +21,14 @@ plotProj2d(proj2dData');
 % part d
 plotProj1d(stdWholeData,covMat);
 
-% 
-
 
 
 %% B2
+
+% part a 
+data = load("F0_Elecs.mat");
+
+% part b
 
 
 
@@ -128,4 +131,23 @@ function plotProj1d(data,covMat)
     yticklabels({'PC1' 'PC2' 'PC3'})
     ylim([0,4]);
     title('Projected on 2 principal components');
+end
+
+function wholeData = getWholeDataElecs(data)
+    wholeData = [];
+    wholeData = appendObjTrial(wholeData, data.steelVase);
+    wholeData = appendObjTrial(wholeData, data.kitchenSponge);
+    wholeData = appendObjTrial(wholeData, data.flourSack);
+    wholeData = appendObjTrial(wholeData, data.carSponge);
+    wholeData = appendObjTrial(wholeData, data.blackFoam);
+    wholeData = appendObjTrial(wholeData, data.acrylic);
+end
+
+function [X,Y,Z] = appendObjTrialElecs(wholeData,objData)
+    for trial=1:10
+        trialData = objData(trial);
+        X = [X; trialData.P];
+        Y = [Y; trialData.V];
+        Z = [Z; trialData.T];
+    end
 end

@@ -38,11 +38,11 @@ Elecs.flourSack = addObjectE("flourSack",finger, time_step);
 Elecs.carSponge = addObjectE("carSponge",finger, time_step);
 Elecs.blackFoam = addObjectE("blackFoam",finger, time_step);
 Elecs.acrylic = addObjectE("acrylic",finger, time_step);
-save(['F',num2str(finger),'_Elecs.mat'], 'PVT');
+save(['F',num2str(finger),'_Elecs.mat'], 'Elecs');
 
 %% A3
 
-PVT = load(['F',num2str(finger),'_Elecs.mat'], 'PVT');
+PVT = load(['F',num2str(finger),'_PVT.mat'], 'PVT');
 
 figure;
 plotBranch(PVT.PVT.steelVase,'steelVase');
