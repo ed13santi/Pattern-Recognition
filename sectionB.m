@@ -69,7 +69,7 @@ end
 
 function stdData = standardiseData(data)
     stdData = data;
-    for col=1:3
+    for col=1:size(data,2)
         stdData(:,col) = (stdData(:,col) - mean(stdData(:,col))) ./ std(stdData(:,col));
     end
 end
@@ -142,7 +142,7 @@ function plotProj1d(data,eigVecMat)
     yticks([1 2 3])
     yticklabels({'PC1' 'PC2' 'PC3'})
     ylim([0,4]);
-    title('Projected on 2 principal components');
+    title('1d projection on each PC');
 end
 
 function wholeData = getWholeDataElecs(data)

@@ -17,16 +17,15 @@ l = [];
 displayObjTrialFinger("steelVase",     finger,trial,timeLims,normalise);
 l = [l, "Steel Vase"];
 %displayObjTrialFinger("kitchenSponge", finger,trial,timeLims,normalise);
-%l = [l, "Kitchen Sponge"];
+l = [l, "Kitchen Sponge"];
 %displayObjTrialFinger("flourSack",     finger,trial,timeLims,normalise);
-%l = [l, "Flour Sack"];
+l = [l, "Flour Sack"];
 displayObjTrialFinger("carSponge",     finger,trial,timeLims,normalise);
 l = [l, "Car Sponge"];
 %displayObjTrialFinger("blackFoam",     finger,trial,timeLims,normalise);
-%l = [l, "Black Foam"];
+l = [l, "Black Foam"];
 %displayObjTrialFinger("acrylic",       finger,trial,timeLims,normalise);
-%l = [l, "Acrylic"];
-legend(l);
+l = [l, "Acrylic"];
 
 %% A2
 
@@ -57,25 +56,17 @@ save(['F',num2str(finger),'_Elecs.mat'], 'Elecs');
 PVT = load(['F',num2str(finger),'_PVT.mat'], 'PVT');
 
 figure;
-l = [];
 plotBranch(PVT.PVT.steelVase,'steelVase');
-l = [l, "Steel Vase"];
 hold on;
 plotBranch(PVT.PVT.kitchenSponge,'kitchenSponge');
-l = [l, "Kitchen Sponge"];
 plotBranch(PVT.PVT.flourSack,'flourSack');
-l = [l, "Flour Sack"];
 plotBranch(PVT.PVT.carSponge,'carSponge');
-l = [l, "Car Sponge"];
 plotBranch(PVT.PVT.blackFoam,'blackFoam');
-l = [l, "Black Foam"];
 plotBranch(PVT.PVT.acrylic,'acrylic');
-l = [l, "Acrylic"];
 hold off;
 xlabel('P');
 ylabel('V');
 zlabel('T');
-legend(l);
 
 
 
