@@ -6,43 +6,48 @@ PVT = load("F0_PVT.mat");
 [X,Y,Z] = getWholeData(PVT.PVT);
 wholeData = [X,Y,Z];
 stdWholeData = standardiseData(wholeData);
-scores = zeros(13,1);
-for cluster_number = 1:12
-    [indeces,C,sumd] = kmeans(stdWholeData,cluster_number,'Distance','cityblock', 'OnlinePhase', 'on', 'Options', statset('UseParallel',1), 'Replicates', 15);
-    score = sum(sumd);
-    scores(cluster_number) = score;
-    
-    if cluster_number > 1 and cluster_numb
-    colours = {'k','m','c','r','g','b'};
-    shapes = {'o', '^', '*', '+', 's', 'h', 'd', 'p', '.', 'x', 'v', '>', '<'};
-    figure;
-    dummy_plot_handles = zeros(6, 1);
-    dummy_plot_handles(1) = plot3(0,0,0, '-','Color', char(colours(1))); 
-    hold on
-    dummy_plot_handles(2) = plot3(0,0,0, '-','Color', char(colours(2)));
-    dummy_plot_handles(3) = plot3(0,0,0, '-','Color', char(colours(3)));
-    dummy_plot_handles(4) = plot3(0,0,0, '-','Color', char(colours(4)));
-    dummy_plot_handles(5) = plot3(0,0,0, '-','Color', char(colours(5)));
-    dummy_plot_handles(6) = plot3(0,0,0, '-','Color', char(colours(6)));
-    grid on;
-    for i=1:60
-        plot3(stdWholeData(i,1), stdWholeData(i, 2), stdWholeData(i, 3), char(shapes(indeces(i))), 'MarkerSize', 10, 'Color', char(colours(fix((i-1)/10)+1)))
+scores = zeros(12,1);
+distances = {'sqeuclidean', 'cityblock', 'cosine', 'correlation'};
+figure;
+for distance = 1:4
+    for cluster_number = 1:12
+        [indeces,C,sumd] = kmeans(stdWholeData,cluster_number,'Distance',char(distances(distance)), 'OnlinePhase', 'on', 'Options', statset('UseParallel',1), 'Replicates', 15);
+        score = sum(sumd);
+        scores(cluster_number) = score;
+
+        if cluster_number == 2 || cluster_number == 3 || cluster_number == 4|| cluster_number == 6
+            colours = {'k','m','c','r','g','b'};
+            shapes = {'o', '^', '*', '+', 's', 'h', 'd', 'p', '.', 'x', 'v', '>', '<'};
+            dummy_plot_handles = zeros(6, 1);
+            dummy_plot_handles(1) = plot3(0,0,0, '-','Color', char(colours(1))); 
+            hold on
+            dummy_plot_handles(2) = plot3(0,0,0, '-','Color', char(colours(2)));
+            dummy_plot_handles(3) = plot3(0,0,0, '-','Color', char(colours(3)));
+            dummy_plot_handles(4) = plot3(0,0,0, '-','Color', char(colours(4)));
+            dummy_plot_handles(5) = plot3(0,0,0, '-','Color', char(colours(5)));
+            dummy_plot_handles(6) = plot3(0,0,0, '-','Color', char(colours(6)));
+            grid on;
+            for i=1:60
+                plot3(stdWholeData(i,1), stdWholeData(i, 2), stdWholeData(i, 3), char(shapes(indeces(i))), 'MarkerSize', 10, 'Color', char(colours(fix((i-1)/10)+1)))
+            end
+            legend(dummy_plot_handles, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic");
+            title("Number of clusters: " + cluster_number + ", Distance: " + char(distance));
+            xlabel("Pressure")
+            ylabel("Vibration")
+            zlabel("Temperature")
+            hold off
+        end
     end
-    legend(dummy_plot_handles, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic");
-    xlabel("Pressure")
-    ylabel("Vibration")
-    zlabel("Temperature")
+    subplot()
+    hold on
+    for i=1:12
+        plot(i, scores(i), '.',  'MarkerSize', 12, 'Color', 'b');
+    end
+    xlabel("Number of Clusters");
+    ylabel("Sum of distances");
     hold off
 end
 
-figure;
-hold on
-for i=1:13
-    plot(i, scores(i), '.',  'MarkerSize', 12, 'Color', 'b');
-end
-xlabel("Number of Clusters");
-ylabel("Sum of distances");
-hold off
 %% HELPER FUNCTIONS
 
 function stdData = standardiseData(data)
