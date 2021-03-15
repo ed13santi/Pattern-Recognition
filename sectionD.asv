@@ -1,0 +1,94 @@
+clear all
+close all
+
+PVT = load("F0_PVT.mat");
+
+[X,Y,Z] = getWholeData(PVT.PVT);
+wholeData = [X,Y,Z];
+stdWholeData = standardiseData(wholeData);
+scores = zeros(13,1);
+for cluster_number = 1:12
+    [indeces,C,sumd] = kmeans(stdWholeData,cluster_number,'Distance','cityblock', 'OnlinePhase', 'on', 'Options', statset('UseParallel',1), 'Replicates', 15);
+    score = sum(sumd);
+    scores(cluster_number) = score;
+    
+    if cluster_number > 1 and cluster_numb
+    colours = {'k','m','c','r','g','b'};
+    shapes = {'o', '^', '*', '+', 's', 'h', 'd', 'p', '.', 'x', 'v', '>', '<'};
+    figure;
+    dummy_plot_handles = zeros(6, 1);
+    dummy_plot_handles(1) = plot3(0,0,0, '-','Color', char(colours(1))); 
+    hold on
+    dummy_plot_handles(2) = plot3(0,0,0, '-','Color', char(colours(2)));
+    dummy_plot_handles(3) = plot3(0,0,0, '-','Color', char(colours(3)));
+    dummy_plot_handles(4) = plot3(0,0,0, '-','Color', char(colours(4)));
+    dummy_plot_handles(5) = plot3(0,0,0, '-','Color', char(colours(5)));
+    dummy_plot_handles(6) = plot3(0,0,0, '-','Color', char(colours(6)));
+    grid on;
+    for i=1:60
+        plot3(stdWholeData(i,1), stdWholeData(i, 2), stdWholeData(i, 3), char(shapes(indeces(i))), 'MarkerSize', 10, 'Color', char(colours(fix((i-1)/10)+1)))
+    end
+    legend(dummy_plot_handles, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic");
+    xlabel("Pressure")
+    ylabel("Vibration")
+    zlabel("Temperature")
+    hold off
+end
+
+figure;
+hold on
+for i=1:13
+    plot(i, scores(i), '.',  'MarkerSize', 12, 'Color', 'b');
+end
+xlabel("Number of Clusters");
+ylabel("Sum of distances");
+hold off
+%% HELPER FUNCTIONS
+
+function stdData = standardiseData(data)
+    stdData = data;
+    for col=1:size(data,2)
+        stdData(:,col) = (stdData(:,col) - mean(stdData(:,col))) ./ std(stdData(:,col));
+    end
+end
+
+function [X,Y,Z] = getWholeData(data)
+    X = [];
+    Y = [];
+    Z = [];
+    [X,Y,Z] = appendObjTrial(X,Y,Z,data.steelVase);
+    [X,Y,Z] = appendObjTrial(X,Y,Z,data.kitchenSponge);
+    [X,Y,Z] = appendObjTrial(X,Y,Z,data.flourSack);
+    [X,Y,Z] = appendObjTrial(X,Y,Z,data.carSponge);
+    [X,Y,Z] = appendObjTrial(X,Y,Z,data.blackFoam);
+    [X,Y,Z] = appendObjTrial(X,Y,Z,data.acrylic);
+end
+
+function [X,Y,Z] = appendObjTrial(X,Y,Z,objData)
+    for trial=1:10
+        trialData = objData(trial);
+        X = [X; trialData.P];
+        Y = [Y; trialData.V];
+        Z = [Z; trialData.T];
+    end
+end
+
+function [X,Y,Z] = getCoords(PVTbranch,trial)
+    X = PVTbranch(trial).P;
+    Y = PVTbranch(trial).V;
+    Z = PVTbranch(trial).T;
+end
+
+function plotBranch(PVTbranch,object)
+    X = [];
+    Y = [];
+    Z = [];
+    for trial=1:10
+        [x,y,z] = getCoords(PVTbranch,trial);
+        X = [X;x];
+        Y = [Y;y];
+        Z = [Z;z];
+    end
+    coloursMap = load('colours.mat');
+    plot3(X,Y,Z,'+','Color',coloursMap.coloursMap(object));
+end
