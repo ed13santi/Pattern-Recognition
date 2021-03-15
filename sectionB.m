@@ -41,6 +41,7 @@ title("Scree plot");
 [eigVecMat,eigValMat] = eig(covMat) % eigenvectors and eigenvalues
 proj3d = eigVecMat(:,end-2:end);
 proj3dData = proj3d' * stdWholeData'
+save("3d_PCA_Electrodes.mat", "proj3dData"); % save for part D2
 plotProj3d(proj3dData',eigVecMat(:,end-2:end));
 
 

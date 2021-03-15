@@ -1,6 +1,9 @@
 clear all
 close all
 
+
+%% PART 1
+
 PVT = load("F0_PVT.mat");
 
 [X,Y,Z] = getWholeData(PVT.PVT);
@@ -45,6 +48,44 @@ end
 xlabel("Number of Clusters");
 ylabel("Sum of distances");
 hold off
+
+
+
+
+%% PART 2
+
+% load data and split into training and test data
+data = load("3d_PCA_Electrodes.mat");
+data = data.proj3dData;
+[trainData, trainClasses, testData, testClasses] = splitData(data);
+
+% create trees trained on the training data
+max_n_trees = 50;
+Mdl = TreeBagger(max_n_trees,trainData',trainClasses','OOBPrediction','On','Method','classification');
+
+% display out of bag error for different numbers of trees
+figure;
+oobErrorBaggedEnsemble = oobError(Mdl);
+plot(oobErrorBaggedEnsemble)
+xlabel 'Number of grown trees';
+ylabel 'Out-of-bag classification error';
+
+% create new model using optimal number of trees
+max_n_trees = 20;
+Mdl = TreeBagger(max_n_trees,trainData',trainClasses','OOBPrediction','On','Method','classification');
+
+% view 2 trees
+view(Mdl.Trees{1},'Mode','graph');
+view(Mdl.Trees{2},'Mode','graph');
+
+% predict using trained ensemble on the test data
+Y = predict(Mdl, testData');
+Y = convertCharsToStrings(Y);
+confusionchart(testClasses', Y);
+
+
+
+
 %% HELPER FUNCTIONS
 
 function stdData = standardiseData(data)
@@ -93,4 +134,18 @@ function plotBranch(PVTbranch,object)
     end
     coloursMap = load('colours.mat');
     plot3(X,Y,Z,'+','Color',coloursMap.coloursMap(object));
+end
+
+function [trainData, trainClasses, testData, testClasses] = splitData(data)
+    classes = ["steel vase", "kitchen sponge", "flour sack", "car sponge", "black foam", "acrylic"];
+    trainData = [];
+    testData = [];
+    trainClasses = [];
+    testClasses = [];
+    for i=1:6
+        trainData = [trainData, data(:,i*10-9:i*10-4)];
+        trainClasses = [trainClasses, classes(i), classes(i), classes(i), classes(i), classes(i), classes(i) ];
+        testData = [testData, data(:,i*10-3:i*10)];
+        testClasses = [testClasses, classes(i), classes(i), classes(i), classes(i)];
+    end
 end

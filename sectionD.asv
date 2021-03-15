@@ -1,48 +1,75 @@
 clear all
 close all
 
+
+%% PART 1
+
 PVT = load("F0_PVT.mat");
 
 [X,Y,Z] = getWholeData(PVT.PVT);
 wholeData = [X,Y,Z];
 stdWholeData = standardiseData(wholeData);
-scores = zeros(13,1);
+scores = zeros(12,1);
 for cluster_number = 1:12
     [indeces,C,sumd] = kmeans(stdWholeData,cluster_number,'Distance','cityblock', 'OnlinePhase', 'on', 'Options', statset('UseParallel',1), 'Replicates', 15);
     score = sum(sumd);
     scores(cluster_number) = score;
     
-    if cluster_number > 1 and cluster_numb
-    colours = {'k','m','c','r','g','b'};
-    shapes = {'o', '^', '*', '+', 's', 'h', 'd', 'p', '.', 'x', 'v', '>', '<'};
-    figure;
-    dummy_plot_handles = zeros(6, 1);
-    dummy_plot_handles(1) = plot3(0,0,0, '-','Color', char(colours(1))); 
-    hold on
-    dummy_plot_handles(2) = plot3(0,0,0, '-','Color', char(colours(2)));
-    dummy_plot_handles(3) = plot3(0,0,0, '-','Color', char(colours(3)));
-    dummy_plot_handles(4) = plot3(0,0,0, '-','Color', char(colours(4)));
-    dummy_plot_handles(5) = plot3(0,0,0, '-','Color', char(colours(5)));
-    dummy_plot_handles(6) = plot3(0,0,0, '-','Color', char(colours(6)));
-    grid on;
-    for i=1:60
-        plot3(stdWholeData(i,1), stdWholeData(i, 2), stdWholeData(i, 3), char(shapes(indeces(i))), 'MarkerSize', 10, 'Color', char(colours(fix((i-1)/10)+1)))
+    if cluster_number > 1 && cluster_number < 7
+        colours = {'k','m','c','r','g','b'};
+        shapes = {'o', '^', '*', '+', 's', 'h', 'd', 'p', '.', 'x', 'v', '>', '<'};
+        figure;
+        dummy_plot_handles = zeros(6, 1);
+        dummy_plot_handles(1) = plot3(0,0,0, '-','Color', char(colours(1))); 
+        hold on
+        dummy_plot_handles(2) = plot3(0,0,0, '-','Color', char(colours(2)));
+        dummy_plot_handles(3) = plot3(0,0,0, '-','Color', char(colours(3)));
+        dummy_plot_handles(4) = plot3(0,0,0, '-','Color', char(colours(4)));
+        dummy_plot_handles(5) = plot3(0,0,0, '-','Color', char(colours(5)));
+        dummy_plot_handles(6) = plot3(0,0,0, '-','Color', char(colours(6)));
+        grid on;
+        for i=1:60
+            plot3(stdWholeData(i,1), stdWholeData(i, 2), stdWholeData(i, 3), char(shapes(indeces(i))), 'MarkerSize', 10, 'Color', char(colours(fix((i-1)/10)+1)))
+        end
+        legend(dummy_plot_handles, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic");
+        title("Number of clusters: " + cluster_number);
+        xlabel("Pressure")
+        ylabel("Vibration")
+        zlabel("Temperature")
+        hold off
     end
-    legend(dummy_plot_handles, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Car Sponge", "Black Foam", "Acrylic");
-    xlabel("Pressure")
-    ylabel("Vibration")
-    zlabel("Temperature")
-    hold off
 end
 
 figure;
 hold on
-for i=1:13
+for i=1:12
     plot(i, scores(i), '.',  'MarkerSize', 12, 'Color', 'b');
 end
 xlabel("Number of Clusters");
 ylabel("Sum of distances");
 hold off
+
+
+
+
+%% PART 2
+
+% load data and split into training and test data
+data = load("3d_PCA_Electrodes.mat");
+[trainData, trainClasses, testData, testClasses] = splitData(data);
+
+% create trees trained on the training data
+max_n_trees = 50;
+Mdl = TreeBagger(max_n_trees,trainData',trainClasses','OOBPrediction','On','Method','classification');
+view(Mdl.Trees{1},'Mode','graph')
+
+figure;
+oobErrorBaggedEnsemble = oobError(Mdl);
+plot(oobErrorBaggedEnsemble)
+xlabel 'Number of grown trees';
+ylabel 'Out-of-bag classification error';
+
+
 %% HELPER FUNCTIONS
 
 function stdData = standardiseData(data)
@@ -91,4 +118,18 @@ function plotBranch(PVTbranch,object)
     end
     coloursMap = load('colours.mat');
     plot3(X,Y,Z,'+','Color',coloursMap.coloursMap(object));
+end
+
+function [trainData, trainClasses, testData, testClasses] = splitData(data)
+    classes = ["steel vase", "kitchen sponge", "flour sack", "car sponge", "black foam", "acrylic"];
+    trainData = [];
+    testData = [];
+    trainClasses = [];
+    testClasses = [];
+    for i=1:6
+        trainData = [trainData, data(:,i*10-9:i*10-4)];
+        trainClasses = [trainClasses, kron(ones(1,6), classes(i))];
+        testData = [testData, data(:,i*10-3:i*10)];
+        testClasses = [testClasses, kron(ones(1,4), classes(i))];
+    end
 end
