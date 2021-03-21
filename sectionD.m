@@ -1,7 +1,6 @@
 clear all
 close all
 
-
 %% PART 1
 
 PVT = load("F0_PVT.mat");
@@ -17,13 +16,14 @@ plotable_cluster_numbers = containers.Map([2, 3, 6], [1, 2, 3]);
 figure;
 for distance = 1:4
     for cluster_number = 1:12
-        [indeces,C,sumd] = kmeans(stdWholeData,cluster_number,'Distance',char(distances(distance)), 'OnlinePhase', 'on', 'Options', statset('UseParallel',1), 'Replicates', 15);
+        [indeces,~,sumd] = kmeans(stdWholeData,cluster_number,'Distance',char(distances(distance)), 'OnlinePhase', 'on', 'Options', statset('UseParallel',1), 'Replicates', 15);
         score = sum(sumd);
         scores(cluster_number, distance) = score;
 
         if cluster_number == 2 || cluster_number == 3 || cluster_number == 6
             subplot(3, 4, plotable_cluster_numbers(cluster_number) * 4 + distance - 4);
             grid on;
+            hold on;
             view([166.234884119522 28.6891719787526]);
             for i=1:60
                 plot3(stdWholeData(i,1), stdWholeData(i, 2), stdWholeData(i, 3), char(shapes(indeces(i))), 'MarkerSize', 7, 'Color', char(colours(fix((i-1)/10)+1)))
@@ -163,26 +163,6 @@ function [X,Y,Z] = appendObjTrial(X,Y,Z,objData)
         Y = [Y; trialData.V];
         Z = [Z; trialData.T];
     end
-end
-
-function [X,Y,Z] = getCoords(PVTbranch,trial)
-    X = PVTbranch(trial).P;
-    Y = PVTbranch(trial).V;
-    Z = PVTbranch(trial).T;
-end
-
-function plotBranch(PVTbranch,object)
-    X = [];
-    Y = [];
-    Z = [];
-    for trial=1:10
-        [x,y,z] = getCoords(PVTbranch,trial);
-        X = [X;x];
-        Y = [Y;y];
-        Z = [Z;z];
-    end
-    coloursMap = load('colours.mat');
-    plot3(X,Y,Z,'+','Color',coloursMap.coloursMap(object));
 end
 
 function [trainData, trainClasses, testData, testClasses] = splitData(data)
