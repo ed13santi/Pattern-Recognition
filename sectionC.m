@@ -13,7 +13,7 @@ temperature_all = vertcat(blackFoam.T, carSponge.T);
 VTstd = standardiseData([vibration_all, temperature_all]);
 VPstd = standardiseData([vibration_all, pressure_all]);
 TPstd = standardiseData([temperature_all, pressure_all]);
-PVTstd = standardiseData([pressure_all, pressure_all, temperature_all]);
+PVTstd = standardiseData([pressure_all, vibration_all, temperature_all]);
 
 
 LDATwoVariables('blackFoam', 'carSponge', "Vibration", "Temperature", VTstd(:,1), VTstd(:,2));
@@ -35,7 +35,7 @@ temperature_all = vertcat(steelVase.T, flourSack.T);
 VTstd = standardiseData([vibration_all, temperature_all]);
 VPstd = standardiseData([vibration_all, pressure_all]);
 TPstd = standardiseData([temperature_all, pressure_all]);
-PVTstd = standardiseData([pressure_all, pressure_all, temperature_all]);
+PVTstd = standardiseData([pressure_all, vibration_all, temperature_all]);
 
 LDATwoVariables('steelVase', 'flourSack', "Vibration", "Temperature", VTstd(:,1), VTstd(:,2));
 LDATwoVariables('steelVase', 'flourSack', "Vibration", "Pressure",  VPstd(:,1), VPstd(:,2));
