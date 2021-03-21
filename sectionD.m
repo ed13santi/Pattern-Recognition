@@ -1,6 +1,9 @@
 clear all
 close all
 
+
+%% PART 1
+
 PVT = load("F0_PVT.mat");
 
 [X,Y,Z] = getWholeData(PVT.PVT);
@@ -73,6 +76,65 @@ l = legend(dummy_plot_handles, "Steel Vase", "Kitchen Sponge", "Flour Sack", "Ca
 l.Location = 'best';
 hold off
 
+%% PART 2
+
+% load data and split into training and test data
+data = load("3d_PCA_Electrodes.mat");
+data = data.proj3dData;
+[trainData, trainClasses, testData, testClasses] = splitData(data);
+
+oobErrors = [];
+for trial=1:100
+% create trees trained on the training data
+max_n_trees = 50;
+Mdl = TreeBagger(max_n_trees,trainData',trainClasses','OOBPrediction','On','Method','classification');
+
+% store out of bag error for trial
+oobErrorBaggedEnsemble = oobError(Mdl);
+oobErrors = [oobErrors, oobErrorBaggedEnsemble];
+end
+
+% display out of bag error for different numbers of trees
+figure;
+plot(mean(oobErrors,2));
+xlabel 'Number of grown trees';
+ylabel 'Average out-of-bag classification error';
+
+% create new model using optimal number of trees
+n_trees = 20;
+tic
+Mdl = TreeBagger(n_trees,trainData',trainClasses','OOBPrediction','On','Method','classification');
+toc
+
+% view 2 trees
+figure;
+view(Mdl.Trees{1},'Mode','graph');
+view(Mdl.Trees{2},'Mode','graph');
+
+% predict using trained ensemble on the test data
+tic
+Y = predict(Mdl, testData');
+toc
+Y = convertCharsToStrings(Y);
+confusionchart(testClasses', Y);
+
+% do again but skipping PCA and using random projections
+clear all
+
+data = load("F0_Elecs.mat");
+wholeData = getWholeDataElecs(data);
+stdWholeData = standardiseData(wholeData);
+[trainData, trainClasses, testData, testClasses] = splitData(stdWholeData');
+n_trees = 20;
+tic
+Mdl = TreeBagger(n_trees,trainData',trainClasses','OOBPrediction','On','Method','classification');
+toc
+tic
+Y = predict(Mdl, testData');
+toc
+Y = convertCharsToStrings(Y);
+confusionchart(testClasses', Y);
+
 %% HELPER FUNCTIONS
 
 function stdData = standardiseData(data)
@@ -101,4 +163,52 @@ function [X,Y,Z] = appendObjTrial(X,Y,Z,objData)
         Y = [Y; trialData.V];
         Z = [Z; trialData.T];
     end
+end
+
+function [X,Y,Z] = getCoords(PVTbranch,trial)
+    X = PVTbranch(trial).P;
+    Y = PVTbranch(trial).V;
+    Z = PVTbranch(trial).T;
+end
+
+function plotBranch(PVTbranch,object)
+    X = [];
+    Y = [];
+    Z = [];
+    for trial=1:10
+        [x,y,z] = getCoords(PVTbranch,trial);
+        X = [X;x];
+        Y = [Y;y];
+        Z = [Z;z];
+    end
+    coloursMap = load('colours.mat');
+    plot3(X,Y,Z,'+','Color',coloursMap.coloursMap(object));
+end
+
+function [trainData, trainClasses, testData, testClasses] = splitData(data)
+    classes = ["steel vase", "kitchen sponge", "flour sack", "car sponge", "black foam", "acrylic"];
+    trainData = [];
+    testData = [];
+    trainClasses = [];
+    testClasses = [];
+    for i=1:6
+        indexes = randperm(10);
+        trainIndexes = (i-1)*10 + indexes(1:6);
+        trainData = [trainData, data(:,trainIndexes)];
+        trainClasses = [trainClasses, classes(i), classes(i), classes(i), classes(i), classes(i), classes(i) ];
+        testIndexes = (i-1)*10 + indexes(7:10);
+        testData = [testData, data(:,testIndexes)];
+        testClasses = [testClasses, classes(i), classes(i), classes(i), classes(i)];
+    end
+end
+
+function wholeData = getWholeDataElecs(data)
+    data = data.Elecs;
+    wholeData = [];
+    wholeData = [wholeData; data.steelVase'];
+    wholeData = [wholeData; data.kitchenSponge'];
+    wholeData = [wholeData; data.flourSack'];
+    wholeData = [wholeData; data.carSponge'];
+    wholeData = [wholeData; data.blackFoam'];
+    wholeData = [wholeData; data.acrylic'];
 end
